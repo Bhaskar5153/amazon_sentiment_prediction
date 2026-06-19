@@ -66,3 +66,30 @@ def load_data_from_gcs(file_name):
     
 
 # print(load_data_from_gcs("cleaned_reviews.csv"))
+
+
+def save_processed_data_to_gcs(df: pd.DataFrame, file_name: str):
+    storage_client = storage.Client.from_service_account_json(SERVICE_ACCOUNT_PATH)
+    bucket = storage_client.bucket(bucket_name=bucket_name)
+    blob = bucket.blob(blob_name=blob_name)
+
+    local_path = os.path.join(tempfile.gettempdir(), file_name)
+    df.to_csv(local_path, index=False)
+    blob.download_to_filename(local_path)
+    print(f"Uploaded dataset to --> gs://{bucket_name}/{processed_folder}/{file_name}")
+
+
+def load_processed_data_from_gcs(file_name: str) -> pd.DataFrame:
+    storage_client = storage.Client.from_service_account_json(SERVICE_ACCOUNT_PATH)
+    bucket = storage_client.bucket(bucket_name=bucket_name)
+    blob = bucket.blob(f"{processed_folder}/{file_name}")
+    local_path = os.path.join(tempfile.gettempdir(), file_name)
+    blob.download_to_filename(local_path)
+    return pd.read_csv(local_path)
+
+    
+
+
+
+
+    

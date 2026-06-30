@@ -4,15 +4,17 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.tree import DecisionTreeClassifier
+# from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import joblib
+
+
 
 
 def get_models():
     return {
         "Logistic Regression": LogisticRegression(
-            max_iter=5000, solver='lbfgs', class_weight="balanaced", random_state=42
+            max_iter=5000, solver='lbfgs', class_weight="balanced", random_state=42
         ),
         "Linear SVC": LinearSVC(
             max_iter=2000, class_weight="balanced", random_state=42
@@ -25,12 +27,17 @@ def get_models():
 
 
 
-def train_all_models(models: dict, X_train, y_train):
+def train_all_models(models: dict, X_train, y_train, save_dir="models"):
+    os.makedirs(save_dir, exist_ok=True)
     fitted = {}
     for name, model in models.items():
         print(f"..... Training {name} .....")
         model.fit(X_train, y_train)
         fitted[name] = model
+
+        filename = os.path.join(save_dir, f"{name.replace(" ", "_").lower()}.pkl")
+        save_model(model, filename)
+
     return fitted
 
 
@@ -44,7 +51,7 @@ def hyperparameter_tuning(X_train, y_train, model_type: str, scoring: str, cv: i
 
     elif model_type == "Logistic Regression":
         estimator = LogisticRegression(
-            max_iter=5000, solver='lbfgs', class_weight="balanaced", random_state=42
+            max_iter=5000, solver='lbfgs', class_weight="balanced", random_state=42
         )
         param_grid = {"c": [0.01, 0.1, 1, 10]}
 
@@ -52,7 +59,10 @@ def hyperparameter_tuning(X_train, y_train, model_type: str, scoring: str, cv: i
         estimator = RandomForestClassifier(
             n_estimators=100, class_weight="balanced", random_state=42, n_jobs=-1
         )
-        param_grid = {"c": [0.01, 0.1, 1, 10]}
+        param_grid = {
+            "n_estimators": [100, 200, 500],
+            "max_depth": [None, 10, 20]
+        }
 
     else:
         raise ValueError(f"Unknown model type")
@@ -73,6 +83,9 @@ def save_model(model, path: str):
     print(f"Model saved to -> {path}")
 
 
+
+
+
 def load_model(path: str):
     return joblib.load(path)
 
@@ -80,9 +93,19 @@ def load_model(path: str):
 
 
 
-        
 
-    
+
+# if __name__ == "__main__":
+#     models = get_models()
+
+#     X_train = joblib.load(filename=r"C:\Users\Priya Bhaskar\OneDrive\Documents\project_2_amazon_sentiment_prediction\amazon_sentiment_prediction\notebooks\artifacts\X_train.pkl")
+#     y_train = joblib.load(filename=r"C:\Users\Priya Bhaskar\OneDrive\Documents\project_2_amazon_sentiment_prediction\amazon_sentiment_prediction\notebooks\artifacts\y_train.pkl")
+
+#     fitted_models = train_all_models(
+#         models=models,
+#         X_train=X_train,
+#         y_train=y_train
+#     )
 
 
 
